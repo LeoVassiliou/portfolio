@@ -302,7 +302,8 @@ background-image:radial-gradient(ellipse 80% 50% at 50% -20%,#22d3ee08,transpare
 </head>
 <body>
 <div class="tpe-strip" id="tpeStrip"><a href="../" id="tpeBack">&larr; Back to portfolio</a><span><label for="tpeVer">Version</label><select id="tpeVer" aria-label="Switch between versions of the Theism Probability Engine">
-<option value="index.html">Full model (worldview analysis)</option>
+<option value="index.html">Stable — full model (confirmed good)</option>
+<option value="beta.html">Beta — new features (work in progress)</option>
 <option value="streamlined.html">Streamlined (Bayesian conditioning)</option>
 <optgroup label="Archive">
 <option value="old/v6.html">Early version 6</option><option value="old/v5.html">Early version 5</option><option value="old/v4.html">Early version 4</option><option value="old/v3.html">Early version 3</option><option value="old/v1.html">Early version 1</option><option value="old/bayes5.html">Bayes experiment</option></optgroup></select></span></div>
@@ -1245,6 +1246,7 @@ document.querySelectorAll('#lvlSeg button').forEach(function(b){b.onclick=functi
 render();
 })();
 </script>
+<script>try{var q=new URLSearchParams(location.search).get('s');if(q){applyState(JSON.parse(decodeURIComponent(escape(atob(q)))),true);showToast('Loaded shared ratings','success')}}catch(e){}</script>
 <script>
 (function(){var cur=location.pathname.split('/').pop()||'index.html';var sel=document.getElementById('tpeVer');
 for(var i=0;i<sel.options.length;i++)if(sel.options[i].value===cur||(cur===''&&sel.options[i].value==='index.html'))sel.selectedIndex=i;
