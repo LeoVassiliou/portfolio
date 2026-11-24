@@ -50,3 +50,13 @@ node tests/engine.test.js
 ## History
 
 Earlier versions (`v1` to `v6`, the Bayes experiments and the long-form argument data) are kept in [`old/`](old/) and reachable from the version menu.
+
+## Evidence levels
+
+A **Simple / Intermediate / Expert** switch in the toolbar changes every premise's evidence and objections (choice is remembered):
+
+- **Simple**: one short plain-words line, about 35 words of evidence and one short objection.
+- **Intermediate**: more detail, light referencing, 1-2 objections.
+- **Expert**: dense, named scholars (Craig, Plantinga, Pruss, Oppy, Parfit, Ehrman and others), a "who defends / disputes" line, plus the original long notes in a collapsible section.
+
+Content lives in `levels.js` (keyed by premise id). Objections get replies, not only rebuttals, and the Shroud premises are explicit about the 1988 dating.
