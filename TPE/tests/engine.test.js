@@ -1,10 +1,10 @@
 // Run with: node TPE/tests/engine.test.js
-// Extracts the pure-maths ENGINE block from index.html so the tests always run against the real code.
+// Extracts the pure-maths ENGINE block from streamlined.html so the tests always run against the real code.
 const fs = require('fs');
 const path = require('path');
 const assert = require('assert');
 
-const html = fs.readFileSync(path.join(__dirname, '..', 'index.html'), 'utf8');
+const html = fs.readFileSync(path.join(__dirname, '..', 'streamlined.html'), 'utf8');
 const m = html.match(/ENGINE:START[^\n]*\n([\s\S]*?)\/\* ===== ENGINE:END/);
 assert(m, 'engine block not found');
 const { soundness, atLeastOne, posterior } = new Function(`${m[1]}; return {soundness, atLeastOne, posterior};`)();
