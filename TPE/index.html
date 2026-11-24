@@ -1,0 +1,454 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Theism Probability Engine | Bayesian argument evaluator</title>
+<meta name="description" content="Rate the premises of ten classic arguments for and against God and see, with transparent Bayesian maths, how they should move your confidence.">
+<meta name="theme-color" content="#0f1420">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><circle cx='50' cy='50' r='40' fill='none' stroke='%237aa2ff' stroke-width='8'/><circle cx='50' cy='50' r='12' fill='%237aa2ff'/></svg>">
+<style>
+:root{
+  --bg:#0f1420; --panel:#171e2e; --panel2:#1d2639; --line:#2a3550;
+  --text:#e8ecf5; --dim:#9aa6bf; --faint:#66728c;
+  --pro:#5ad1a4; --con:#f08a7a; --accent:#7aa2ff; --warn:#f3c969;
+  --radius:14px;
+  --font:system-ui,-apple-system,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+  --mono:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;
+}
+[data-theme="light"]{
+  --bg:#f5f7fb; --panel:#ffffff; --panel2:#eef1f8; --line:#d6dcea;
+  --text:#18202f; --dim:#53607a; --faint:#7d89a3;
+  --pro:#0e9468; --con:#d2503d; --accent:#3b63d9; --warn:#a97a00;
+}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{margin:0;background:var(--bg);color:var(--text);font:16px/1.55 var(--font);-webkit-font-smoothing:antialiased}
+a{color:var(--accent)}
+button,select{font:inherit;color:inherit}
+.wrap{max-width:1180px;margin:0 auto;padding:0 20px}
+
+header.top{padding:34px 0 18px}
+.eyebrow{font:600 12px/1 var(--mono);letter-spacing:.14em;text-transform:uppercase;color:var(--accent)}
+h1{margin:10px 0 8px;font-size:clamp(28px,5vw,44px);line-height:1.1;letter-spacing:-.02em}
+.lede{max-width:720px;color:var(--dim);margin:0 0 18px;font-size:17px}
+.actions{display:flex;flex-wrap:wrap;gap:10px;align-items:center}
+.btn{background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:9px 14px;cursor:pointer;font-size:14px;transition:border-color .15s,background .15s}
+.btn:hover{border-color:var(--accent)}
+.btn.primary{background:var(--accent);border-color:var(--accent);color:#0b1020;font-weight:600}
+.btn:focus-visible,select:focus-visible,summary:focus-visible,input:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+select.btn{padding-right:8px}
+
+details.how{background:var(--panel);border:1px solid var(--line);border-radius:var(--radius);padding:4px 18px;margin:16px 0 8px}
+details.how summary{cursor:pointer;padding:12px 0;font-weight:600}
+details.how .body{padding:0 0 14px;color:var(--dim)}
+details.how ol{padding-left:20px;margin:8px 0}
+.formula{font:14px/1.5 var(--mono);background:var(--panel2);border:1px solid var(--line);border-radius:10px;padding:12px 14px;margin:10px 0;color:var(--text);overflow-x:auto}
+
+.layout{display:grid;grid-template-columns:minmax(0,1fr) 360px;gap:26px;align-items:start;margin-top:18px}
+@media(max-width:940px){.layout{grid-template-columns:1fr}}
+
+h2.sec{display:flex;align-items:center;gap:10px;margin:30px 0 12px;font-size:20px}
+h2.sec .dot{width:10px;height:10px;border-radius:50%}
+h2.sec small{font-weight:400;color:var(--faint);font-size:14px}
+
+.card{background:var(--panel);border:1px solid var(--line);border-radius:var(--radius);padding:18px;margin-bottom:12px}
+.prior label.t{display:block;font-weight:600;margin-bottom:2px}
+.prior p{margin:0 0 12px;color:var(--dim);font-size:14px}
+
+.arg{padding:0;overflow:hidden}
+.arg>summary{list-style:none;cursor:pointer;padding:16px 18px;display:grid;grid-template-columns:1fr auto;gap:4px 14px;align-items:center}
+.arg>summary::-webkit-details-marker{display:none}
+.arg h3{margin:0;font-size:16px;line-height:1.3}
+.arg .sum{grid-column:1;color:var(--dim);font-size:14px}
+.arg .badge{grid-row:1/3;grid-column:2;text-align:right;font:600 13px var(--mono);color:var(--faint);min-width:84px}
+.arg.pro{border-left:3px solid var(--pro)}
+.arg.con{border-left:3px solid var(--con)}
+.arg[open]>summary{border-bottom:1px solid var(--line)}
+.arg .inner{padding:6px 18px 16px}
+.prem{padding:12px 0;border-bottom:1px dashed var(--line)}
+.prem:last-of-type{border-bottom:0}
+.prem .q{display:flex;gap:10px;justify-content:space-between;align-items:baseline}
+.prem .q b{font-weight:600}
+.prem .note{color:var(--dim);font-size:13.5px;margin:4px 0 8px}
+.rate{display:grid;grid-template-columns:1fr 56px 26px;gap:10px;align-items:center}
+.val{font:600 14px var(--mono);text-align:right}
+.val.unset{color:var(--faint)}
+.x{background:none;border:0;color:var(--faint);cursor:pointer;font-size:16px;border-radius:6px}
+.x:hover{color:var(--text)}
+.objection{margin-top:8px;background:var(--panel2);border:1px solid var(--line);border-radius:10px;padding:10px 12px;font-size:13.5px;color:var(--dim)}
+.objection b{color:var(--text)}
+
+input[type=range]{width:100%;accent-color:var(--accent);height:24px;background:none}
+input[type=range].unset{opacity:.45}
+.pro input[type=range]{accent-color:var(--pro)}
+.con input[type=range]{accent-color:var(--con)}
+
+aside.result{position:sticky;top:16px}
+@media(max-width:940px){aside.result{position:static}}
+.big{font:700 54px/1 var(--mono);letter-spacing:-.03em}
+.cap{color:var(--dim);font-size:14px;margin:6px 0 14px;min-height:42px}
+.track{position:relative;height:14px;background:var(--panel2);border-radius:99px;border:1px solid var(--line);margin:8px 0 6px}
+.fill{position:absolute;inset:0 auto 0 0;border-radius:99px;background:var(--accent);opacity:.85;width:0;transition:width .35s}
+.mark{position:absolute;top:-5px;bottom:-5px;width:2px;background:var(--text);opacity:.8}
+.scale{display:flex;justify-content:space-between;font:11px var(--mono);color:var(--faint)}
+.mini{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:14px 0}
+.mini div{background:var(--panel2);border:1px solid var(--line);border-radius:10px;padding:9px 11px}
+.mini span{display:block;font-size:12px;color:var(--faint)}
+.mini b{font:700 18px var(--mono)}
+.res h4{margin:18px 0 8px;font-size:13px;letter-spacing:.08em;text-transform:uppercase;color:var(--faint)}
+.row{display:grid;grid-template-columns:1fr 84px;gap:4px 10px;align-items:center;margin-bottom:9px;font-size:13.5px}
+.row .nm{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.row .sh{font:600 12.5px var(--mono);text-align:right}
+.row .bar{grid-column:1/3;height:5px;border-radius:5px;background:var(--panel2);overflow:hidden}
+.row .bar i{display:block;height:100%}
+.sens{font-size:13.5px;margin:0 0 8px;display:flex;justify-content:space-between;gap:10px}
+.sens span:first-child{color:var(--dim)}
+.sens b{font-family:var(--mono);white-space:nowrap}
+.empty{color:var(--faint);font-size:14px}
+.pos{color:var(--pro)} .neg{color:var(--con)}
+
+.limits{margin:34px 0 10px}
+.limits ul{color:var(--dim);padding-left:20px}
+footer{border-top:1px solid var(--line);margin-top:40px;padding:22px 0 40px;color:var(--faint);font-size:14px}
+.toast{position:fixed;bottom:20px;left:50%;transform:translate(-50%,20px);background:var(--panel);border:1px solid var(--accent);padding:10px 16px;border-radius:10px;opacity:0;pointer-events:none;transition:.25s;z-index:9}
+.toast.show{opacity:1;transform:translate(-50%,0)}
+@media(prefers-reduced-motion:reduce){*{transition:none!important;scroll-behavior:auto!important}}
+
+.bar-m{display:none}
+@media(max-width:940px){
+  .bar-m{display:flex;text-decoration:none;color:var(--text);position:fixed;left:0;right:0;bottom:0;z-index:8;justify-content:space-between;align-items:center;gap:12px;padding:10px 18px;background:var(--panel);border-top:1px solid var(--line);box-shadow:0 -6px 20px rgba(0,0,0,.18);cursor:pointer}
+  .bar-m b{font:700 22px var(--mono)}
+  .bar-m span{color:var(--dim);font-size:13px}
+  body{padding-bottom:64px}
+  .toast{bottom:78px;width:max-content;max-width:calc(100vw - 32px);text-align:center}
+}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<header class="top">
+  <div class="eyebrow">Leo Vassiliou &middot; Interactive project</div>
+  <h1>Theism Probability Engine</h1>
+  <p class="lede">Rate the premises of ten classic arguments for and against the existence of God. The engine uses Bayesian conditioning, with every step shown, to work out how those ratings should move your confidence.</p>
+  <div class="actions">
+    <select id="preset" class="btn" aria-label="Load an example worldview">
+      <option value="">Load an example&hellip;</option>
+      <option value="skeptic">Example: Skeptic</option>
+      <option value="agnostic">Example: Agnostic</option>
+      <option value="theist">Example: Theist</option>
+    </select>
+    <button class="btn primary" id="share">Copy share link</button>
+    <button class="btn" id="reset">Reset</button>
+    <button class="btn" id="theme" aria-label="Toggle light and dark theme">Theme</button>
+  </div>
+  <details class="how">
+    <summary>How the maths works</summary>
+    <div class="body">
+      <ol>
+        <li><b>Set a prior.</b> How likely do you think God is before looking at any argument?</li>
+        <li><b>Rate each premise</b> from 0 to 100: how likely is it to be true?</li>
+        <li><b>Soundness.</b> An argument works only if all its premises hold, so its chance of being sound is the product of its premise ratings (assuming the premises are independent).</li>
+        <li><b>Combine.</b> If an argument is sound, its conclusion is settled. If it is not, it tells you nothing and you fall back on your prior. Let A be the chance at least one argument for God is sound and B the chance at least one argument against is sound. Both cannot be sound at once, so we condition on that:</li>
+      </ol>
+      <div class="formula">P(God) = [ A(1&minus;B) + prior &middot; (1&minus;A)(1&minus;B) ] / (1 &minus; A&middot;B)</div>
+      <p>Two properties worth knowing. With no arguments against, this reduces to P = A + prior &middot; (1&minus;A). If both sides are equally strong they split the &ldquo;settled&rdquo; cases evenly, so you land between your prior and 50%, with your prior holding whatever weight is left. The model is unit-tested in the repo.</p>
+    </div>
+  </details>
+</header>
+
+<div class="layout">
+  <main>
+    <section class="card prior">
+      <label class="t" for="prior">Your starting point (prior)</label>
+      <p>Before weighing any argument, how likely is it that God exists? Be honest, since everything else builds on this.</p>
+      <div class="rate" style="grid-template-columns:1fr 56px">
+        <input type="range" id="prior" min="1" max="99" value="50" aria-label="Prior probability that God exists">
+        <div class="val" id="priorVal">50%</div>
+      </div>
+    </section>
+
+    <h2 class="sec"><span class="dot" style="background:var(--pro)"></span>Arguments for <small>conclusion: God exists</small></h2>
+    <div id="pro"></div>
+
+    <h2 class="sec"><span class="dot" style="background:var(--con)"></span>Arguments against <small>conclusion: God does not exist</small></h2>
+    <div id="con"></div>
+
+    <section class="limits card">
+      <h3 style="margin-top:0">What this model does not do</h3>
+      <ul>
+        <li>It treats each argument as <i>deductive</i>: sound means the conclusion follows. Real arguments such as fine-tuning and evil are often probabilistic, so read results as a structured way to organise your thinking rather than a measurement.</li>
+        <li>It assumes premises within an argument, and the arguments themselves, are independent. Shared assumptions (for example about causation) would break that.</li>
+        <li>It defines &ldquo;God&rdquo; loosely as a creator-level, personal being. Arguments for specific religions are out of scope.</li>
+        <li>The ten arguments are a sample of the debate, not all of it. I tried to give each side its best-known case.</li>
+      </ul>
+    </section>
+  </main>
+
+  <aside class="result" id="result" aria-live="polite">
+    <div class="card res">
+      <div class="eyebrow" style="margin-bottom:8px">Your result</div>
+      <div class="big" id="post">&mdash;</div>
+      <div class="cap" id="caption">Rate every premise of at least one argument to see your result.</div>
+      <div class="track"><div class="fill" id="fill"></div><div class="mark" id="mark"></div></div>
+      <div class="scale"><span>0%</span><span>prior marked</span><span>100%</span></div>
+      <div class="mini">
+        <div><span>Case for (A)</span><b id="A">&mdash;</b></div>
+        <div><span>Case against (B)</span><b id="B">&mdash;</b></div>
+      </div>
+      <h4>Each argument alone</h4>
+      <div id="perArg"><div class="empty">Nothing rated yet.</div></div>
+      <h4>What moves it most</h4>
+      <div id="sens"><div class="empty">Rate a full argument to see which premise matters most.</div></div>
+    </div>
+  </aside>
+</div>
+
+<footer>
+  Built by Leo Vassiliou &middot; <a href="https://github.com/LeoVassiliou/portfolio">source on GitHub</a> &middot; <a href="old/v2.html">original version</a> &middot; Your ratings stay in your browser and are never sent anywhere.
+</footer>
+</div>
+<a class="bar-m" id="barM" href="#result" onclick="event.preventDefault();document.getElementById('result').scrollIntoView({behavior:'smooth'})" aria-label="Jump to your result"><span id="barCap">Your result</span><b id="barVal">&mdash;</b></a>
+<div class="toast" id="toast" role="status"></div>
+
+<script>
+/* ===== ENGINE:START (pure maths, unit-tested in tests/engine.test.js) ===== */
+function soundness(ratings){
+  // ratings: array of 0..1 or null. Null anywhere => argument not fully rated.
+  if(!ratings.length||ratings.some(v=>v===null||v===undefined)) return null;
+  return ratings.reduce((a,v)=>a*v,1);
+}
+function atLeastOne(qs){ return 1-qs.reduce((a,q)=>a*(1-q),1); }
+function posterior(prior,pro,con){
+  // pro/con: arrays of soundness probabilities. Returns P(God) or null if contradictory certainty.
+  const A=atLeastOne(pro), B=atLeastOne(con);
+  const den=1-A*B;
+  if(den<1e-12) return null;
+  return (A*(1-B)+prior*(1-A)*(1-B))/den;
+}
+/* ===== ENGINE:END ===== */
+
+const ARGS=[
+ {id:"kalam",side:"pro",title:"Kalam cosmological argument",short:"Kalam",
+  sum:"The universe began to exist, so something outside it caused it.",
+  prem:[
+   ["Whatever begins to exist has a cause.","Matches everyday experience; critics note quantum events may be uncaused."],
+   ["The universe began to exist.","Supported by Big Bang cosmology, though some models propose an eternal or cyclic past."],
+   ["A cause of the universe would have to be a timeless, immaterial, personal agent.","The step from 'a cause' to 'a creator with a mind' is the most contested link."]],
+  obj:"Causation may not apply outside time, and a cause need not be personal."},
+ {id:"fine",side:"pro",title:"Fine-tuning argument",short:"Fine-tuning",
+  sum:"Life needs finely balanced physical constants, which design explains better than chance.",
+  prem:[
+   ["The constants of physics fall in a narrow life-permitting range.","Widely discussed by physicists, but how narrow depends on what could vary."],
+   ["That narrowness is far more expected if a designer exists than by chance.","Depends on a probability measure over possible constants, which is disputed."],
+   ["No better explanation exists (a multiverse, a deeper law, or selection effects).","A multiverse would make life-permitting universes unsurprising."]],
+  obj:"Observers can only exist in life-permitting universes, and the 'probability' of constants may be undefined."},
+ {id:"cont",side:"pro",title:"Argument from contingency",short:"Contingency",
+  sum:"The universe could have failed to exist, so its existence needs an explanation outside itself.",
+  prem:[
+   ["Every contingent thing has an explanation for why it exists.","The Principle of Sufficient Reason, intuitive but hard to prove."],
+   ["The universe (all contingent things together) is itself contingent.","Disputed: the universe might simply be a brute fact."],
+   ["The explanation must be a necessary being, which is God.","Why a necessary being must have a mind or will is the open question."]],
+  obj:"A strong sufficient-reason principle may imply everything is necessary, and the whole need not share the parts' features."},
+ {id:"moral",side:"pro",title:"Moral argument",short:"Moral",
+  sum:"Objective right and wrong exist, and God is the best explanation of them.",
+  prem:[
+   ["Objective moral values and duties exist.","Many find moral claims such as 'torturing children for fun is wrong' undeniably true."],
+   ["If God does not exist, objective moral values and duties do not.","Secular moral realists (and others) reject this conditional."]],
+  obj:"The Euthyphro dilemma: is something good because God commands it, or does God command it because it is good?"},
+ {id:"onto",side:"pro",title:"Modal ontological argument",short:"Ontological",
+  sum:"If a maximally great being is even possible, it must exist.",
+  prem:[
+   ["It is possible that a maximally great being exists.","Critics say this quietly assumes the conclusion; defenders say it is a modest claim."],
+   ["If it is possible that such a being exists, then it exists (a modal logic principle called S5).","Valid within S5, which not everyone accepts for metaphysical possibility."]],
+  obj:"Parody arguments run the same logic to 'prove' absurd things, so the first premise may be doing all the work."},
+
+ {id:"evil",side:"con",title:"Problem of evil",short:"Evil",
+  sum:"Pointless suffering is hard to square with an all-powerful, all-good God.",
+  prem:[
+   ["Some suffering serves no outweighing good.","Examples include animal suffering in nature that humans never see."],
+   ["An all-powerful, all-knowing, perfectly good God would not permit such suffering.","Challenged by free-will and soul-making defences."]],
+  obj:"Skeptical theism says we are in no position to judge what justifies suffering."},
+ {id:"hide",side:"con",title:"Divine hiddenness",short:"Hiddenness",
+  sum:"A loving God would make belief easy for those who seek, but sincere seekers still doubt.",
+  prem:[
+   ["A perfectly loving God would make belief available to anyone open to a relationship.","Depends on what a loving relationship requires."],
+   ["Some people are reasonably open to belief yet do not believe.","Theists often dispute that non-belief is ever fully innocent."]],
+  obj:"God may value freedom to respond, or the relationship may need more than intellectual belief."},
+ {id:"pars",side:"con",title:"Parsimony (Occam's razor)",short:"Parsimony",
+  sum:"Natural explanations keep replacing supernatural ones, so God adds complexity for little gain.",
+  prem:[
+   ["Natural explanations have repeatedly replaced supernatural ones across history.","Think lightning, disease, the origin of species."],
+   ["Positing God adds complexity without explaining anything that remains unexplained.","Theists say a single mind is simpler than brute laws and facts."]],
+  obj:"Ultimate questions (why anything exists, why these laws) may be exactly where theism claims to add explanatory power."},
+ {id:"cog",side:"con",title:"Debunking from the cognitive science of religion",short:"Debunking",
+  sum:"Religious belief is well explained by how human minds evolved, whether or not it is true.",
+  prem:[
+   ["Religious belief is well explained by evolved cognitive tendencies and culture, independent of its truth.","Research suggests tendencies like detecting agency in the world."],
+   ["If a belief's origin is independent of its truth, we should lower our confidence in it.","Critics call this the genetic fallacy."]],
+  obj:"God might have used such mechanisms on purpose, and the same reasoning would also undermine atheistic beliefs."},
+ {id:"incoh",side:"con",title:"Incoherence of the divine attributes",short:"Incoherence",
+  sum:"The traditional attributes of God contradict each other.",
+  prem:[
+   ["Attributes such as omnipotence, omniscience, perfect goodness and timelessness are jointly incoherent.","Classic puzzles include free will versus foreknowledge."],
+   ["A concept that is incoherent cannot be instantiated.","Plausible if the incoherence is real; the weight sits on premise one."]],
+  obj:"Refined definitions (for example of omnipotence) may dissolve each puzzle."}
+];
+
+const PRESETS={
+ skeptic:{prior:25,r:{kalam:[40,40,15],fine:[50,30,25],cont:[30,35,25],moral:[40,20],onto:[30,40],evil:[75,60],hide:[65,50],pars:[70,50],cog:[65,45],incoh:[40,50]}},
+ agnostic:{prior:50,r:{kalam:[60,55,30],fine:[60,45,40],cont:[45,45,40],moral:[60,40],onto:[40,50],evil:[45,40],hide:[40,35],pars:[50,35],cog:[45,30],incoh:[25,45]}},
+ theist:{prior:70,r:{kalam:[85,65,60],fine:[80,60,55],cont:[70,60,60],moral:[80,60],onto:[55,65],evil:[50,35],hide:[45,35],pars:[55,35],cog:[50,30],incoh:[20,55]}}
+};
+
+/* ---------- state ---------- */
+const state={prior:50,r:{}};
+ARGS.forEach(a=>state.r[a.id]=a.prem.map(()=>null));
+const $=s=>document.querySelector(s);
+const fmt=p=>p===null?"—":(p*100).toFixed(p<0.1&&p>0?1:0)+"%";
+const sgn=n=>(n>=0?"+":"−")+Math.abs(n*100).toFixed(1);
+
+/* ---------- build UI ---------- */
+function buildArg(a){
+  const d=document.createElement("details");
+  d.className="card arg "+a.side; d.id="arg-"+a.id;
+  const s=document.createElement("summary");
+  s.innerHTML='<h3></h3><div class="sum"></div><div class="badge" data-badge>unrated</div>';
+  s.querySelector("h3").textContent=a.title;
+  s.querySelector(".sum").textContent=a.sum;
+  d.appendChild(s);
+  const inner=document.createElement("div"); inner.className="inner";
+  a.prem.forEach((p,i)=>{
+    const row=document.createElement("div"); row.className="prem";
+    const id=`${a.id}-${i}`;
+    row.innerHTML=`<div class="q"><b>${i+1}. </b><label for="${id}" style="flex:1"></label></div>
+      <div class="note"></div>
+      <div class="rate"><input type="range" id="${id}" min="0" max="100" step="1" value="50" class="unset" aria-label="Probability premise ${i+1} is true">
+      <div class="val unset" data-val>&mdash;</div><button class="x" title="Clear rating" aria-label="Clear rating">&times;</button></div>`;
+    row.querySelector("label").textContent=p[0];
+    row.querySelector(".note").textContent=p[1];
+    const inp=row.querySelector("input"), val=row.querySelector("[data-val]");
+    const set=v=>{state.r[a.id][i]=v;update(true)};
+    inp.addEventListener("input",()=>set(+inp.value));
+    inp.addEventListener("keydown",e=>{if(state.r[a.id][i]===null&&/Arrow|Home|End|Page/.test(e.key)){setTimeout(()=>set(+inp.value),0)}});
+    inp.addEventListener("pointerdown",()=>{if(state.r[a.id][i]===null) set(+inp.value)});
+    row.querySelector(".x").addEventListener("click",()=>set(null));
+    inner.appendChild(row);
+  });
+  const o=document.createElement("div"); o.className="objection";
+  o.innerHTML="<b>Main pushback:</b> "; o.appendChild(document.createTextNode(a.obj));
+  inner.appendChild(o);
+  d.appendChild(inner);
+  return d;
+}
+ARGS.forEach(a=>$("#"+a.side).appendChild(buildArg(a)));
+
+/* ---------- compute + render ---------- */
+function qOf(a){return soundness(state.r[a.id].map(v=>v===null?null:v/100))}
+function compute(overrideId,overrideIdx,overrideVal){
+  const pro=[],con=[];
+  ARGS.forEach(a=>{
+    let r=state.r[a.id];
+    if(a.id===overrideId){r=r.slice();r[overrideIdx]=overrideVal}
+    const q=soundness(r.map(v=>v===null?null:v/100));
+    if(q!==null)(a.side==="pro"?pro:con).push(q);
+  });
+  return {pro,con,post:(pro.length+con.length)?posterior(state.prior/100,pro,con):null};
+}
+function update(save){
+  const prior=state.prior/100;
+  $("#priorVal").textContent=state.prior+"%";
+  // premise widgets
+  ARGS.forEach(a=>{
+    a.prem.forEach((_,i)=>{
+      const v=state.r[a.id][i], inp=$("#"+a.id+"-"+i), val=inp.closest(".rate").querySelector("[data-val]");
+      if(v===null){inp.classList.add("unset");val.classList.add("unset");val.textContent="—"}
+      else{inp.value=v;inp.classList.remove("unset");val.classList.remove("unset");val.textContent=v+"%"}
+    });
+    const q=qOf(a), b=$("#arg-"+a.id+" [data-badge]");
+    b.textContent=q===null?(state.r[a.id].some(v=>v!==null)?"partly rated":"unrated"):"sound: "+fmt(q);
+  });
+  const {pro,con,post}=compute();
+  const A=pro.length?atLeastOne(pro):0, B=con.length?atLeastOne(con):0;
+  const hasAny=pro.length+con.length>0;
+  $("#mark").style.left=state.prior+"%";
+  if(!hasAny){
+    $("#post").textContent="—"; $("#fill").style.width="0";
+    $("#caption").textContent="Rate every premise of at least one argument to see your result.";
+    $("#A").textContent="—"; $("#B").textContent="—";
+    $("#perArg").innerHTML='<div class="empty">Nothing rated yet.</div>';
+    $("#sens").innerHTML='<div class="empty">Rate a full argument to see which premise matters most.</div>';
+  } else if(post===null){
+    $("#post").textContent="n/a"; $("#caption").textContent="You rated both sides as certainly sound, which is contradictory. Lower one of them.";
+  } else {
+    $("#post").textContent=fmt(post); $("#fill").style.width=(post*100)+"%";
+    const d=post-prior;
+    $("#caption").innerHTML=Math.abs(d)<0.005
+      ?"Your arguments barely move you from your prior."
+      :`That is a <b class="${d>0?"pos":"neg"}">${sgn(d)} point</b> shift from your prior of ${state.prior}%.`;
+    $("#A").textContent=pro.length?fmt(A):"—"; $("#B").textContent=con.length?fmt(B):"—";
+    // per-argument alone
+    const rows=ARGS.map(a=>({a,q:qOf(a)})).filter(x=>x.q!==null).map(({a,q})=>{
+      const alone=a.side==="pro"?posterior(prior,[q],[]):posterior(prior,[],[q]);
+      return {a,q,alone,delta:alone-prior};
+    }).sort((x,y)=>Math.abs(y.delta)-Math.abs(x.delta));
+    $("#perArg").innerHTML=rows.map(r=>`<div class="row"><span class="nm">${r.a.short}</span>
+      <span class="sh ${r.delta>=0?"pos":"neg"}">${sgn(r.delta)} pts</span>
+      <div class="bar"><i style="width:${(r.q*100).toFixed(1)}%;background:var(--${r.a.side})"></i></div></div>`).join("");
+    // sensitivity
+    const items=[];
+    ARGS.forEach(a=>{ if(qOf(a)===null) return;
+      a.prem.forEach((p,i)=>{
+        const v=state.r[a.id][i]; if(v>=100) return;
+        const n=compute(a.id,i,Math.min(100,v+10)).post;
+        if(n!==null) items.push({txt:a.short+": premise "+(i+1),d:n-post});
+      });
+    });
+    items.sort((x,y)=>Math.abs(y.d)-Math.abs(x.d));
+    $("#sens").innerHTML=items.slice(0,5).map(x=>`<div class="sens"><span>${x.txt} +10</span><b class="${x.d>=0?"pos":"neg"}">${sgn(x.d)} pts</b></div>`).join("")||'<div class="empty">Nothing to show.</div>';
+  }
+  $("#barVal").textContent=$("#post").textContent;
+  $("#barCap").textContent=(hasAny&&post!==null)?"Your result ("+sgn(post-prior)+" pts)":"Your result";
+  if(save){try{localStorage.setItem("tpe-state-v2",JSON.stringify(state))}catch(e){}}
+}
+
+/* ---------- controls ---------- */
+$("#prior").addEventListener("input",e=>{state.prior=+e.target.value;update(true)});
+function load(s){
+  state.prior=s.prior??50; $("#prior").value=state.prior;
+  ARGS.forEach(a=>{const r=s.r&&s.r[a.id];state.r[a.id]=a.prem.map((_,i)=>r&&typeof r[i]==="number"?Math.max(0,Math.min(100,Math.round(r[i]))):null)});
+  update(true);
+}
+$("#preset").addEventListener("change",e=>{
+  const p=PRESETS[e.target.value]; if(p){load(p);toast("Loaded example. These are illustrative, not endorsements.");ARGS.forEach(a=>$("#arg-"+a.id).open=false)}
+  e.target.value="";
+});
+$("#reset").addEventListener("click",()=>{load({prior:50,r:{}});history.replaceState(null,"",location.pathname);toast("Reset")});
+$("#share").addEventListener("click",()=>{
+  const payload=btoa(unescape(encodeURIComponent(JSON.stringify({prior:state.prior,r:state.r}))));
+  const url=location.origin+location.pathname+"#s="+payload;
+  const done=()=>toast("Share link copied");
+  if(navigator.clipboard&&navigator.clipboard.writeText){navigator.clipboard.writeText(url).then(done,()=>{prompt("Copy this link:",url)})}
+  else prompt("Copy this link:",url);
+  history.replaceState(null,"","#s="+payload);
+});
+function toast(t){const el=$("#toast");el.textContent=t;el.classList.add("show");clearTimeout(toast.t);toast.t=setTimeout(()=>el.classList.remove("show"),2200)}
+
+/* theme */
+const root=document.documentElement;
+function setTheme(t){root.setAttribute("data-theme",t);try{localStorage.setItem("tpe-theme",t)}catch(e){}}
+let t0=null;try{t0=localStorage.getItem("tpe-theme")}catch(e){}
+setTheme(t0||(matchMedia("(prefers-color-scheme: light)").matches?"light":"dark"));
+$("#theme").addEventListener("click",()=>setTheme(root.getAttribute("data-theme")==="light"?"dark":"light"));
+
+/* boot: share link > saved state > blank */
+(function(){
+  const m=location.hash.match(/^#s=(.+)$/);
+  if(m){try{load(JSON.parse(decodeURIComponent(escape(atob(m[1])))));return}catch(e){}}
+  try{const s=JSON.parse(localStorage.getItem("tpe-state-v2")||"null");if(s){load(s);return}}catch(e){}
+  update(false);
+})();
+</script>
+</body>
+</html>
