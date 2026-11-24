@@ -1,6 +1,10 @@
-# Leo Vassiliou | Portfolio
+# Leo Vassiliou
 
-Personal portfolio at [leovassiliou.co.uk](https://leovassiliou.co.uk). I'm a second-year Computer Science student at the University of Hertfordshire, looking for a 2027/28 software engineering placement.
+**Second-year Computer Science student (University of Hertfordshire) seeking a 2027/28 software engineering placement.**
+
+[**Live site**](https://leovassiliou.co.uk) · [CV (PDF)](Leo-Vassiliou-CV.pdf) · [LinkedIn](https://www.linkedin.com/in/leovassiliou) · [Knowitball](https://knowitball.co.uk) · leov2007@hotmail.com
+
+**At a glance:** JavaScript, HTML/CSS, C#/Unity, Python, Git. Part of a team building Knowitball. Six years of making games. No frameworks needed for this repo: it is plain HTML, CSS and JavaScript with unit-tested logic.
 
 ![LeoOS, the desktop-style portfolio](docs/leoos-desktop.png)
 
@@ -31,6 +35,12 @@ The site has three more designs (Kickoff, Headline and Orbit), switchable from t
 - **Knowitball** ([knowitball.co.uk](https://knowitball.co.uk)): a browser-based football games platform with accounts, player profiles and six games, in beta.
 - **Theism Probability Engine** ([/TPE](https://leovassiliou.co.uk/TPE/)): rate the premises of classic arguments and see how they should move your confidence. A full model plus a streamlined, unit-tested one.
 - **Unity / C# games**: six years of independent game development.
+
+## Quality
+
+- Unit tests for the probability maths: `node TPE/tests/engine.test.js` and `node TPE/tests/beta.test.js`
+- Accessibility: labelled controls, keyboard focus styles, reduced-motion support
+- No build step, no dependencies, works offline once loaded
 
 ## Run it locally
 
